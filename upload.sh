@@ -10,7 +10,7 @@ if [[ -z "${files}" ]]; then
 else
 	printf 'Uploading file(s) now!'
 	n=1
-	for i in ${files}; do
+	for i in "$@"; do
 		printf "\nUploading file #${n} ... "
 		out=$(curl -sf -F file="@${i}" http://upload.teknik.io/lib/upload.php)
 		if [[ -n "${out}" ]]; then
