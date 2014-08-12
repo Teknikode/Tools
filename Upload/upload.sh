@@ -12,7 +12,7 @@ else
 	n=1
 	for i in "$@"; do
 		printf "\nUploading file #${n} ... "
-		out=$(curl -sf -F file="@${i}" http://upload.teknik.io/includes/upload.php)
+		out=$(curl -sf -F file="@${i}" http://api.teknik.io/upload/post)
 		if [[ -n "${out}" ]]; then
 			printf "uploaded! Your file can be found at http://u.teknik.io/${out}\n"
 		else
