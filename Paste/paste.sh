@@ -6,7 +6,7 @@ usage() {
     echo "\
 Teknik Pastebin Script in BASH \
 
-Usage : $(basename ${0}) [ -t <paste title> ] [ -e <paste expiration> ] [ -f <type of code> ] [ -p <password> ] [ -h ]
+Usage : $(basename ${0}) [ -t <paste title> ] [ -e <paste expiration> ] [ -f <type of code> ] [ -p <password> ] [ -F <file> ] [ -h ]
 
 <paste title>       Specify the title of paste to be used. (optional)
 <paste expiration>  Specify expiration of paste. Either 1 day (1d) or 1 month (1m). Default is never. (optional)
@@ -26,7 +26,7 @@ cpp - C++"
 
 querystring="paste=yes"
 
-while getopts "t:f:e:p:h" flags; do
+while getopts "t:f:F:e:p:h" flags; do
 	case "${flags}" in
 		h)
 			usage
@@ -47,6 +47,14 @@ while getopts "t:f:e:p:h" flags; do
 			fi
 			querystring="${querystring}&expiry=${expiry}"
 		;;
+		F)
+			if [ -z "${OPTARG}" ]; then
+				printf 'You have to supply a file to upload to the pastebin!\n'
+				exit 1
+			else
+				fileinput="${OPTARG}"
+			fi
+		;;
 		f)
 			format="${OPTARG}"
 			querystring="${querystring}&format=${format}"
@@ -58,17 +66,22 @@ while getopts "t:f:e:p:h" flags; do
 	esac
 done	
 
-input="$(</dev/stdin)"
+if [ -n "${fileinput}" ]; then
+	input=$(cat "${fileinput}")
+else
+	input="$(</dev/stdin)"
+fi
 
 if [[ -n "${input}" ]]; then
-	output=$(curl --silent --data "${querystring}" --data-urlencode "code2=${input}" http://p.teknik.io/index.php)
-	pasteid=$(grep -Eo '<a HREF="[0-9]*' <<< ${output})
+	output=$(curl --silent --data "${querystring}" --data-urlencode "code=${input}" http://api.teknik.io/paste)
+	pasteid=$(grep -Eo '"id":[0-9]+' <<< "${output}" | sed 's/\\//g')
+	pasteid="${pasteid##\"id\":}"
 	if [[ -n "${pasteid}" ]]; then
 		[[ -n "${title}" ]] && printf "Title Specified: ${title}\n"
 		[[ -n "${expiry}" ]] && printf "Expiration Specified: ${expiry}\n"
 		[[ -n "${format}" ]] && printf "Paste Format Specified: ${format}\n"
 		[[ -n "${password}" ]] && printf "Paste is password protected!\n"
-		printf "Your paste can be found at http://p.teknik.io/${pasteid:9}\n"
+		printf "Your paste can be found at http://p.teknik.io/${pasteid}\n"
 		exit 0
 	else
 		printf "There was an error submitting your paste! We are sorry."
