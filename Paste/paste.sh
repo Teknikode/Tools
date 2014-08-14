@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# name: teknik-paste
-# requires: bash 4.0+, curl
+# name:		teknik-paste
+# author:	KittyKatt
+# requires:	bash 4.0+, curl
 
 usage() {
     echo "\
