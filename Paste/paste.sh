@@ -74,7 +74,7 @@ else
 fi
 
 if [[ -n "${input}" ]]; then
-	output=$(curl --silent --data "${querystring}" --data-urlencode "code=${input}" http://api.teknik.io/paste)
+	output=$(curl --silent --data "${querystring}" --data-urlencode "code=${input}" https://api.teknik.io/paste)
 	pasteid=$(grep -Eo '"id":[0-9]+' <<< "${output}" | sed 's/\\//g')
 	pasteid="${pasteid##\"id\":}"
 	if [[ -n "${pasteid}" ]]; then
@@ -82,7 +82,7 @@ if [[ -n "${input}" ]]; then
 		[[ -n "${expiry}" ]] && printf "Expiration Specified: ${expiry}\n"
 		[[ -n "${format}" ]] && printf "Paste Format Specified: ${format}\n"
 		[[ -n "${password}" ]] && printf "Paste is password protected!\n"
-		printf "Your paste can be found at http://p.teknik.io/${pasteid}\n"
+		printf "Your paste can be found at https://p.teknik.io/${pasteid}\n"
 		exit 0
 	else
 		printf "There was an error submitting your paste! We are sorry."
