@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # teknik - Upload files/scrots/urls to teknik.io (rip pomf & uguu ;_;7)
-# requires maim / xclip
+# This script requires maim / xclip / wget be installed.
 # By onodera, modified by SirCmpwn
 # Further modified by alusion
 
@@ -20,13 +20,21 @@ logfile="$HOME/.teknik"
 
 ## FUNCTIONS
 
+bin_there() {
+	if ! type "$@" >/dev/null 2>&1 ; then
+		echo "$@ not installed."
+		exit 1
+	fi
+}
+
 # This function sets $file to a selection scrot
 selection() {
+	bin_there "maim"
 	uploadme="/tmp/scrot.png"
 
 	maim --hidecursor -s -b 3 -c 250,250,250 "$uploadme" 2> "/dev/null"
 	if [[ "$?" -ge 1 ]]; then
-		echo "Selection cancelled."
+		echo "Selection cancelled.">&2
 		exit 1
 	fi
 
@@ -35,6 +43,7 @@ selection() {
 
 # This function sets $file to your clipboard contents
 clipboard() {
+	bin_there "xclip"
 	uploadme="/tmp/scrot.txt"
 
 	xclip -o > "$uploadme"
@@ -44,6 +53,7 @@ clipboard() {
 
 # This function sets $file an url
 url() {
+	bin_there "wget"
 	type="$(echo "$location" | rev | cut -d "." -f 1 | rev)"
 	uploadme="/tmp/url.$type"
 
@@ -57,7 +67,7 @@ file() {
 	if [[ -f "$location" ]]; then
 		uploadme="$location"
 	else
-		echo "File not found."
+		echo "File not found.">&2
 		exit 1
 	fi
 
@@ -66,8 +76,9 @@ file() {
 
 # This function sets $file to a full screen scrot
 desktop() {
+	bin_there "maim"
 	uploadme="/tmp/scrot.png"
-
+	
 	maim --hidecursor "$uploadme"
 
 	word=desktop
@@ -89,6 +100,7 @@ upload() {
 feedback() {
 	# Copy url to clipboard
 	if [[ "$clipboard" == true ]]; then
+		bin_there "xclip"
 		echo "$url" | xclip -selection primary
 		echo "$url" | xclip -selection clipboard
 	fi
