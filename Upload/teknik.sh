@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 # teknik - Upload files/scrots/urls to teknik.io (rip pomf & uguu ;_;7)
-# requires maim / slop
+# requires maim / xclip
 # By onodera, modified by SirCmpwn
 # Further modified by alusion
 
