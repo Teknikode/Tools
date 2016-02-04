@@ -14,7 +14,6 @@ else
 	for i in "$@"; do
 		printf "\nUploading file #${n} ... "
 		out=$(curl -sf -F file="@${i}" https://api.teknik.io/v1/Upload)
-		echo "${out}"
 		if [[ "${out}" =~ "error" ]]; then
 			printf 'error uploading file!\n'
 			exit 1
