@@ -86,7 +86,7 @@ desktop() {
 
 # This function uploads the $file
 upload() {
-	url=$(curl --silent -F file="@$uploadme" "https://api.teknik.io/upload/post")
+	url=$(curl --silent -F file="@$uploadme" "https://api.teknik.io/v1/Upload")
 	if [[ "${url}" =~ "error" ]]; then
 		printf	'error uploading file!\n'
 		exit 1

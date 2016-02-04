@@ -13,7 +13,7 @@ else
 	n=1
 	for i in "$@"; do
 		printf "\nUploading file #${n} ... "
-		out=$(curl -sf -F file="@${i}" https://api.teknik.io/upload/post)
+		out=$(curl -sf -F file="@${i}" https://api.teknik.io/v1/Upload)
 		if [[ "${out}" =~ "error" ]]; then
 			printf 'error uploading file!\n'
 			exit 1
