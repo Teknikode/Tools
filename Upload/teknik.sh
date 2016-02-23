@@ -91,7 +91,7 @@ upload() {
 		printf	'error uploading file!\n'
 		exit 1
 	else
-		url="${url##*name\":\"}"
+		url="${url##*fileName\":\"}"
 		url="https://u.teknik.io/${url%%\"*}"
 	fi
 }
