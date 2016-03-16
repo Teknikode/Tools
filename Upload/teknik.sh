@@ -14,7 +14,7 @@ notify=true
 # Open URL in browser
 browser=false
 # Log URLs
-log=false
+log=true
 # Log file location
 logfile="$HOME/.teknik"
 
@@ -78,21 +78,35 @@ file() {
 desktop() {
 	bin_there "maim"
 	uploadme="/tmp/scrot.png"
-	
 	maim --hidecursor "$uploadme"
 
 	word=desktop
 }
 
 # This function uploads the $file
-upload() {
-	url=$(curl --silent -F file="@$uploadme;type=image/png" "https://api.teknik.io/v1/Upload")
-	if [[ "${url}" =~ "error" ]]; then
-		printf	'error uploading file!\n'
-		exit 1
-	else
+upload(){
+    if
+        [[ ${uploadme} =~ png ]] 
+    then
+        url=$(curl -silent -F file="@$uploadme;type=image/png" "https://api.teknik.io/v1/Upload")
+        if
+            [[ "${url}" =~ "error" ]]; then
+            printf  'error uploading file!\n'
+            exit 1
+        else
+            url="${url##*fileName\":\"}"
+            url="https://u.teknik.io/${url%%\"*}"
+            fi
+    else
+        url=$(curl -silent -F file="@$uploadme" "https://api.teknik.io/v1/Upload")
+        if
+            [[ "${url}" =~ "error" ]]; then
+            printf	'error uploading file!\n'
+            exit 1
+            else 
 		url="${url##*fileName\":\"}"
 		url="https://u.teknik.io/${url%%\"*}"
+    fi
 	fi
 }
 
