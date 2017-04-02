@@ -12,7 +12,7 @@ These tools are used to interact with different services of Teknik.
 
 ## Third-party scripts
 
-* [tekup](https://gitlab.com/DanielFGray/dotfiles/raw/master/local/bin/tekup) - `Bash` script that uploads both text files to Paste and other files to Upload. Supports parallel uploading via `xargs`.
+* [tekup](https://git.teknik.io/danthebeastman/tekup) - `Bash` script that uploads both text files to Paste and other files to Upload. Includes API support and logging
 
 ## Bugs/Feature Requests
 
