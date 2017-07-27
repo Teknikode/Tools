@@ -2,36 +2,30 @@ __module_name__ = "Teknik Upload"
 __module_version__ = "1.0"
 __module_description__ = "Upload files to Teknik"
 
-import hexchat
-import base64
-import json
+import_success = True
+
 import tkinter as tk
 from tkinter.filedialog import askopenfilename
 
-# Requires Install
-import requests
+try:
+    import hexchat
+except ImportError:
+    print('This script must be run under Hexchat.')
+    print('Get Hexchat now at: https://hexchat.github.io/')
+    import_ok = False
 
-defaultUrl = 'https://api.teknik.io/v1/Upload'
-defaultUsername = ''
-defaultToken = ''
+# Requires Install
+try:
+    from teknik import uploads as teknik
+except ImportError as e:
+    print('Missing package(s) for %s: %s' % ('Teknik Upload', e))
+    import_ok = False
 
 def teknik_prompt():
-    # Get current config values
-    apiUrl = defaultUrl
-    apiUsername = defaultUsername
-    apiToken = defaultToken
-    
-    cfgUrl = hexchat.get_pluginpref('teknik_url')
-    if cfgUrl is not None:
-      apiUrl = cfgUrl
-    
-    cfgUsername = hexchat.get_pluginpref('teknik_username')
-    if cfgUsername is not None:
-      apiUsername = cfgUsername
-    
-    cfgToken = hexchat.get_pluginpref('teknik_auth_token')
-    if cfgToken is not None:
-      apiToken = cfgToken
+    # Get current config values    
+    apiUrl = hexchat.get_pluginpref('teknik_url')
+    apiUsername = hexchat.get_pluginpref('teknik_username')
+    apiToken = hexchat.get_pluginpref('teknik_auth_token')
     
     # Prompt for a file
     root = tk.Tk()
@@ -39,23 +33,14 @@ def teknik_prompt():
     file_path = askopenfilename()
     
     if file_path != '':
-      # Create the request
-      files = {'file': open(file_path, "rb")}
-      
-      # Create a header if they have added auth info
-      headers = {}
-      if apiUsername != '' and apiToken != '':
-        encAuth = base64.b64encode(apiUsername + ':' + apiToken)
-        headers = {'Authorization': 'Basic ' + encAuth}
-      
-      r = requests.post(apiUrl, files=files, headers=headers)
-      jObj = json.loads(r.text)
+      # Try to upload the file
+      results = teknik.UploadFile(apiUrl, file_path, apiUsername, apiToken)
       
       # Either print the result to the input box, or write the error message to the window
-      if 'error' in jObj:
-        hexchat.prnt('Error: ' + jObj['error']['message'])
-      elif 'result' in jObj:      
-        hexchat.command("settext " + jObj['result']['url'])
+      if 'error' in results:
+        hexchat.prnt('Error: ' + results['error']['message'])
+      elif 'result' in results:      
+        hexchat.command("settext " + results['result']['url'])
       else:
         hexchat.prnt('Unknown Error')
 
@@ -94,7 +79,8 @@ def teknik_command(word, word_eol, userdata):
   
   return hexchat.EAT_ALL
 
-hexchat.hook_command("TEKNIK", teknik_command, help="""Allows uploading of a file to Teknik and sharing the url directly to the chat.
+if __name__ == "__main__" and import_success:
+  hexchat.hook_command("TEKNIK", teknik_command, help="""Allows uploading of a file to Teknik and sharing the url directly to the chat.
 
 Usage: TEKNIK
        TEKNIK username <username>
