@@ -3,7 +3,8 @@
 ### Installation
 
 * Make sure Hexchat is installed with the Python 3 plugin
-* Install the [requests](http://docs.python-requests.org/en/master/) module
+* Install the [teknik](https://git.teknik.io/Teknikode/Teknik-Python) module
+  * `pip install teknik`
 * Copy the scripts to the 'addon' folder for Hexchat
 
 
