@@ -18,7 +18,7 @@ except ImportError as e:
     import_ok = False
 
 # Weechat Registration
-weechat.register("Teknik Upload", "Uncled1023", "1.0", "BSDv3", "Uploads files to the Teknik Services", "", "")
+weechat.register("Teknik Upload", "Uncled1023", "1.0.0", "BSDv3", "Uploads files to the Teknik Services", "", "")
 
 def teknik_prompt():
     # Get current config values

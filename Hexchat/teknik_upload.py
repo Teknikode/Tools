@@ -1,5 +1,5 @@
 __module_name__ = "Teknik Upload"
-__module_version__ = "1.0"
+__module_version__ = "1.0.1"
 __module_description__ = "Upload files to Teknik"
 
 import_success = True
