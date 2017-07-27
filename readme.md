@@ -10,6 +10,10 @@ These tools are used to interact with different services of Teknik.
 
 * paste.sh - `Bash` script for creating a paste from text.
 
+## Hexchat Addons
+
+* Teknik Upload - Allows easy uploading of files and sharing of the generated url.
+
 ## Third-party scripts
 
 * [tekup](https://git.teknik.io/danthebeastman/tekup) - `Bash` script that uploads both text files to Paste and other files to Upload. Includes API support and logging
