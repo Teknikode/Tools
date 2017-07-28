@@ -7,8 +7,6 @@ import sys
 import os
 import threading
 import json
-import Tkinter as tk
-import tkFileDialog
 
 try:
     import weechat
