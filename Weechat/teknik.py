@@ -25,10 +25,7 @@ except ImportError as e:
     import_success = False
 
 # Weechat Registration
-weechat.register("Teknik", "Uncled1023", "1.0.0", "BSDv3", "Interact with the Teknik Services", "script_closed", "")
-
-# Threads
-curThreads = []
+weechat.register("Teknik", "Uncled1023", "1.0.0", "BSD", "Interact with the Teknik Services, including file uploads, pastes, and url shortening.", "script_closed", "")
 
 def upload_file(data):
   try:
@@ -72,8 +69,7 @@ def teknik_set_username(username):
   weechat.config_set_plugin('plugins.var.python.teknik.username', username)
   
 def script_closed():
-  for t in curThreads:
-    t.join()
+  # Clean Up Session
   return weechat.WEECHAT_RC_OK
       
 def teknik_command(data, buffer, args):
@@ -95,7 +91,7 @@ def teknik_command(data, buffer, args):
         apiToken = weechat.config_string(weechat.config_get('plugins.var.python.teknik.token'))
         
         data = {'file': argv[1], 'apiUrl': apiUrl, 'apiUsername': apiUsername, 'apiToken': apiToken}
-        hook = weechat.hook_process('func:upload_file', 20000, "process_upload", json.dumps(data))
+        hook = weechat.hook_process('func:upload_file', 0, "process_upload", json.dumps(data))
         
     # Set a config option
     elif command == 'set':
