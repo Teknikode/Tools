@@ -1,6 +1,6 @@
-__module_name__ = "Teknik Upload"
+__module_name__ = "Teknik"
 __module_version__ = "1.0.1"
-__module_description__ = "Upload files to Teknik"
+__module_description__ = "Interact with the Teknik Services, including file uploads, pastes, and url shortening."
 
 import_success = True
 
@@ -18,31 +18,39 @@ except ImportError:
 try:
     from teknik import uploads as teknik
 except ImportError as e:
-    print('Missing package(s) for %s: %s' % ('Teknik Upload', e))
+    print('Missing package(s) for %s: %s' % (__module_name__, e))
     import_ok = False
 
 def teknik_prompt():
+  # Prompt for a file
+  root = tk.Tk()
+  root.withdraw()
+  file_path = askopenfilename()
+  
+  if file_path is not None:
+    # Upload the selected file
+    upload_file(file_path)
+        
+def upload_file(file):
+  if file != '':
     # Get current config values    
     apiUrl = hexchat.get_pluginpref('teknik_url')
     apiUsername = hexchat.get_pluginpref('teknik_username')
-    apiToken = hexchat.get_pluginpref('teknik_auth_token')
+    apiToken = hexchat.get_pluginpref('teknik_auth_token')  
     
-    # Prompt for a file
-    root = tk.Tk()
-    root.withdraw()
-    file_path = askopenfilename()
+    # Try to upload the file
+    results = teknik.UploadFile(apiUrl, file, apiUsername, apiToken)
     
-    if file_path != '':
-      # Try to upload the file
-      results = teknik.UploadFile(apiUrl, file_path, apiUsername, apiToken)
-      
-      # Either print the result to the input box, or write the error message to the window
-      if 'error' in results:
-        hexchat.prnt('Error: ' + results['error']['message'])
-      elif 'result' in results:      
-        hexchat.command("settext " + results['result']['url'])
-      else:
-        hexchat.prnt('Unknown Error')
+    # Either print the result to the input box, or write the error message to the window
+    if 'error' in results:
+      hexchat.prnt('Error: ' + results['error']['message'])
+    elif 'result' in results:      
+      hexchat.command("settext " + results['result']['url'])
+    else:
+      hexchat.prnt('Unknown Error')
+  else:
+    hexchat.prnt('Error: Invalid File')
+
 
 def teknik_set_url(url):
   hexchat.set_pluginpref('teknik_url', url)
@@ -55,34 +63,48 @@ def teknik_set_username(username):
       
 def teknik_command(word, word_eol, userdata):
   if len(word) < 2:
-    teknik_prompt()
+    hexchat.prnt("Error: You must specify a command")
   else:
     command = word[1].lower()
     
-    if command == 'username':
+    if command == 'upload':
       if len(word) < 3:
-        hexchat.prnt("Error: You must specify a username")
+        teknik_prompt()
       else:
-        teknik_set_username(word[2])
-    elif command == 'token':
+        upload_file(word_eol[2])
+    elif command == 'set':
       if len(word) < 3:
-        hexchat.prnt("Error: You must specify an auth token")
+        hexchat.prnt("Error: You must specify a config option")
       else:
-        teknik_set_token(word[2])
-    elif command == 'url':
-      if len(word) < 3:
-        hexchat.prnt("Error: You must specify an api url")
-      else:
-        teknik_set_url(word[2])
+        option = word[2].lower()
+        
+        # Set value based on option
+        if option == 'username':
+          if len(word) < 4:
+            hexchat.prnt("Error: You must specify a username")
+          else:
+            teknik_set_username(word_eol[3])
+        elif option == 'token':
+          if len(word) < 4:
+            hexchat.prnt("Error: You must specify an auth token")
+          else:
+            teknik_set_token(word_eol[3])
+        elif option == 'url':
+          if len(word) < 4:
+            hexchat.prnt("Error: You must specify an api url")
+          else:
+            teknik_set_url(word_eol[3])
+        else:
+          hexchat.prnt("Error: Unrecognized option")
     else:
-      hexchat.prnt("Error: Unrecognized Command")
+      hexchat.prnt("Error: Unrecognized command")
   
   return hexchat.EAT_ALL
 
 if __name__ == "__main__" and import_success:
-  hexchat.hook_command("TEKNIK", teknik_command, help="""Allows uploading of a file to Teknik and sharing the url directly to the chat.
+  hexchat.hook_command("TEKNIK", teknik_command, help="""Upload files, paste text, shorten URLs, or change script options.
 
-Usage: TEKNIK
-       TEKNIK username <username>
-       TEKNIK token <auth_token>
-       TEKNIK url <api_url>""")
+Usage: TEKNIK upload [<file>]
+       TEKNIK set username <username>
+       TEKNIK set token <auth_token>
+       TEKNIK set url <api_url>""")

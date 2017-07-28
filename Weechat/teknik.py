@@ -120,7 +120,7 @@ def teknik_command(data, buffer, args):
   return weechat.WEECHAT_RC_OK
 
 if __name__ == "__main__" and import_success:
-  hook = weechat.hook_command("teknik", "Allows uploading of a file to Teknik and sharing the url directly to the chat.",
+  hook = weechat.hook_command("teknik", "Upload files, paste text, shorten URLs, or change script options.",
         "[upload <file>] | [set username|token|url <username|auth_token|api_url>]",
         '          file: The file you want to upload'
         '      username: The username for your Teknik account'
