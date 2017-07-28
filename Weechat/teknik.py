@@ -1,7 +1,10 @@
-#!/usr/bin/python
+# Teknik created by Uncled1023 <admin@teknik.io>
 import_success = True
 
+import sys
 import os
+import threading
+import json
 import Tkinter as tk
 import tkFileDialog
 
@@ -16,30 +19,47 @@ except ImportError:
 try:
     from teknik import uploads as teknik
 except ImportError as e:
-    print('Missing package(s) for %s: %s' % ('Teknik Upload', e))
+    print('Missing package(s) for %s: %s' % ('Teknik', e))
     import_success = False
 
 # Weechat Registration
-weechat.register("Teknik", "Uncled1023", "1.0.0", "BSDv3", "Interact with the Teknik Services", "", "")
+weechat.register("Teknik", "Uncled1023", "1.0.0", "BSDv3", "Interact with the Teknik Services", "script_closed", "")
 
-def teknik_prompt(file):
-    # Get current config values
-    apiUrl = weechat.config_string(weechat.config_get('plugins.var.python.teknik.api_url'))
-    apiUsername = weechat.config_string(weechat.config_get('plugins.var.python.teknik.username'))
-    apiToken = weechat.config_string(weechat.config_get('plugins.var.python.teknik.token'))
-    
-    if file is not None and os.path.exists(file):
+# Threads
+curThreads = []
+
+def upload_file(data):
+  try:
+    args = json.loads(data)
+    if args['file'] is not None and os.path.exists(args['file']):
       # Try to upload the file
-      results = teknik.UploadFile(apiUrl, file, apiUsername, apiToken)
-      
-      # Either print the result to the input box, or write the error message to the window
-      if 'error' in results:
-        print('Error: ' + results['error']['message'])
-      elif 'result' in results:      
-        buffer = weechat.current_buffer()
-        weechat.buffer_set(buffer, 'input', results['result']['url'])
-      else:
-        print('Unknown Error')
+      jObj = teknik.UploadFile(args['apiUrl'], args['file'], args['apiUsername'], args['apiToken'])
+      return json.dumps(jObj)
+  except:
+    e = sys.exc_info()[0]
+    return "Exception: %s" %e
+  return ''
+
+def process_upload(data, command, return_code, out, err):
+  if return_code == weechat.WEECHAT_HOOK_PROCESS_ERROR:
+      weechat.prnt("", "Error with command '%s'" % command)
+      return weechat.WEECHAT_RC_OK
+  if return_code >= 0:
+      weechat.prnt("", "return_code = " + str(return_code) + ", out: " + out + ", err: " + err + ", data: " + data)
+  if out != "":
+    weechat.prnt("", out)
+    results = json.loads(out)
+    # Either print the result to the input box, or write the error message to the window
+    if 'error' in results:
+      weechat.prnt("", 'Error: ' + results['error']['message'])
+    elif 'result' in results:      
+      buffer = weechat.current_buffer()
+      weechat.buffer_set(buffer, 'input', results['result']['url'])
+    else:
+      weechat.prnt("", 'Unknown Error')
+  if err != "":
+      weechat.prnt("", "stderr: %s" % err)
+  return weechat.WEECHAT_RC_OK
 
 def teknik_set_url(url):
   weechat.config_set_plugin('plugins.var.python.teknik.api_url', url)
@@ -49,11 +69,16 @@ def teknik_set_token(token):
 
 def teknik_set_username(username):
   weechat.config_set_plugin('plugins.var.python.teknik.username', username)
+  
+def script_closed():
+  for t in curThreads:
+    t.join()
+  return weechat.WEECHAT_RC_OK
       
 def teknik_command(data, buffer, args):
   args = args.strip()
   if args == "":
-    print("Error: You must specify a command")
+    weechat.prnt("", "Error: You must specify a command")
   else:
     argv = args.split(" ")
     command = argv[0].lower()
@@ -61,35 +86,41 @@ def teknik_command(data, buffer, args):
     # Upload a File
     if command == 'upload':
       if len(argv) < 2:
-        print("Error: You must specify a file")
+        weechat.prnt("", "Error: You must specify a file")
       else:
-        teknik_prompt(argv[1])
+        # Get current config values
+        apiUrl = weechat.config_string(weechat.config_get('plugins.var.python.teknik.api_url'))
+        apiUsername = weechat.config_string(weechat.config_get('plugins.var.python.teknik.username'))
+        apiToken = weechat.config_string(weechat.config_get('plugins.var.python.teknik.token'))
+        
+        data = [{'file': argv[1], 'apiUrl': apiUrl, 'apiUsername': apiUsername, 'apiToken': apiToken}]
+        hook = weechat.hook_process('func:upload_file', 20000, "process_upload", json.dumps(data))
         
     # Set a config option
     elif command == 'set':
       if len(argv) < 2:
-        print("Error: You must specify the option to set")
+        weechat.prnt("", "Error: You must specify the option to set")
       else:
         option = argv[1].lower()
         if option == 'username':
           if len(argv) < 3:
-            print("Error: You must specify a username")
+            weechat.prnt("", "Error: You must specify a username")
           else:
             teknik_set_username(argv[2])
         elif option == 'token':
           if len(argv) < 3:
-            print("Error: You must specify an auth token")
+            weechat.prnt("", "Error: You must specify an auth token")
           else:
             teknik_set_token(argv[2])
         elif option == 'url':
           if len(argv) < 3:
-            print("Error: You must specify an api url")
+            weechat.prnt("", "Error: You must specify an api url")
           else:
             teknik_set_url(argv[2])
         else:
-          print("Error: Unrecognized Option")
+          weechat.prnt("", "Error: Unrecognized Option")
     else:
-      print("Error: Unrecognized Command")
+      weechat.prnt("", "Error: Unrecognized Command")
   
   return weechat.WEECHAT_RC_OK
 
