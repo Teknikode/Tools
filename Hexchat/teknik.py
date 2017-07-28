@@ -4,22 +4,29 @@ __module_description__ = "Interact with the Teknik Services, including file uplo
 
 import_success = True
 
-import tkinter as tk
-from tkinter.filedialog import askopenfilename
+try:
+  import Tkinter as tk
+except ImportError:
+  import tkinter as tk
 
 try:
-    import hexchat
+  from tkinter.filedialog import askopenfilename
 except ImportError:
-    print('This script must be run under Hexchat.')
-    print('Get Hexchat now at: https://hexchat.github.io/')
-    import_ok = False
+  from tkFileDialog import askopenfilename
+
+try:
+  import hexchat
+except ImportError:
+  print('This script must be run under Hexchat.')
+  print('Get Hexchat now at: https://hexchat.github.io/')
+  import_success = False
 
 # Requires Install
 try:
-    from teknik import uploads as teknik
+  from teknik import uploads as teknik
 except ImportError as e:
-    print('Missing package(s) for %s: %s' % (__module_name__, e))
-    import_ok = False
+  print('Missing package(s) for %s: %s' % (__module_name__, e))
+  import_success = False
 
 def teknik_prompt():
   # Prompt for a file
