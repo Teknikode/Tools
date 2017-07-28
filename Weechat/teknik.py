@@ -1,4 +1,6 @@
 # Teknik created by Uncled1023 <admin@teknik.io>
+from __future__ import print_function
+
 import_success = True
 
 import sys
@@ -37,17 +39,16 @@ def upload_file(data):
       return json.dumps(jObj)
   except:
     e = sys.exc_info()[0]
-    return "Exception: %s" %e
+    print("Exception: %s" %e, file=sys.stderr)
   return ''
 
 def process_upload(data, command, return_code, out, err):
   if return_code == weechat.WEECHAT_HOOK_PROCESS_ERROR:
       weechat.prnt("", "Error with command '%s'" % command)
       return weechat.WEECHAT_RC_OK
-  if return_code >= 0:
-      weechat.prnt("", "return_code = " + str(return_code) + ", out: " + out + ", err: " + err + ", data: " + data)
+  if return_code > 0:
+      weechat.prnt("", "return_code = %d" % return_code)
   if out != "":
-    weechat.prnt("", out)
     results = json.loads(out)
     # Either print the result to the input box, or write the error message to the window
     if 'error' in results:
@@ -93,7 +94,7 @@ def teknik_command(data, buffer, args):
         apiUsername = weechat.config_string(weechat.config_get('plugins.var.python.teknik.username'))
         apiToken = weechat.config_string(weechat.config_get('plugins.var.python.teknik.token'))
         
-        data = [{'file': argv[1], 'apiUrl': apiUrl, 'apiUsername': apiUsername, 'apiToken': apiToken}]
+        data = {'file': argv[1], 'apiUrl': apiUrl, 'apiUsername': apiUsername, 'apiToken': apiToken}
         hook = weechat.hook_process('func:upload_file', 20000, "process_upload", json.dumps(data))
         
     # Set a config option
