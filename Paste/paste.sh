@@ -58,7 +58,7 @@ while getopts "t:f:F:e:p:h" flags; do
 		;;
 		f)
 			format="${OPTARG}"
-			querystring="${querystring}&format=${format}"
+			querystring="${querystring}&syntax=${format}"
 		;;
 		p)
 			password="${OPTARG}"
